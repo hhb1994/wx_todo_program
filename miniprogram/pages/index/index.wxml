@@ -1,0 +1,81 @@
+<wxs module="utils" src="./../../utils/utils.wxs"></wxs>
+<van-notify id="van-notify" />
+<view>
+    <van-icon class="add-icon" name="add" color="#38495c" bindtap="showPopup" size="30px" />
+</view>
+<view class="menu flex">
+    <view class="isDoneFilter" bindtap="showIsDonePopup">
+        <van-icon name="arrow-down" />
+        {{filter.isDone}}
+    </view>
+    <view class="inDateFilter">
+        只显示未过期事项
+        <van-switch size="12px" inactive-color="#CBD6DD" active-color="#38495c" checked="{{ filter.inDate }}" bind:change="onSwitchChange" />
+    </view>
+</view>
+<view class="">
+    <movable-area class="todo-pane" wx:for="{{todoList}}" wx:key="index">
+        <movable-view damping="60" friction="2" x="{{item.x}}" inertia class="todo-pane-view" direction="horizontal" data-index='{{index}}' bindchange="onMoveViewChange">
+            <view class="todo-pane-left">
+                <view class="todo-pane-title {{!item.isDone?'':'line-through'}}">
+                    {{item.title}}
+                </view>
+                <view class="todo-pane-date">
+                    {{item.isDone?"已标记为完成":"未完成"}}
+                    <span wx:if="{{!item.isDone}}">|  {{utils.judgeDate(item.date)}}</span>
+                </view>
+                <view wx:if="{{item.address.address!=' '}}" class="todo-pane-address" data-address="{{item.address}}" bindtap="showMap">
+                    <p>
+                        <van-icon name="map-marked" />
+                        {{item.address.address}}
+                    </p>
+                </view>
+                <view wx:if="{{item.remark}}" class="todo-pane-remark">备注:{{item.remark}}</view>
+            </view>
+            <view class="todo-pane-right">
+                <view wx:if="{{!item.isDone}}" class="todo-pane-right-button confirm" data-index="{{index}}" data-isdone="{{!item.isDone}}" bindtap="updateTodo">
+                    <image src="./../../images/right.svg" lazy-load="false"></image>
+                </view>
+                <view wx:else class="todo-pane-right-button confirm2" data-index="{{index}}" data-isdone="{{!item.isDone}}" bindtap="updateTodo">
+                    <image src="./../../images/back.svg" lazy-load="false"></image>
+                </view>
+            </view>
+            <view class="todo-pane-right">
+                <view class="todo-pane-right-button delete" data-index="{{index}}" data-id="{{item._id}}" bindtap="deleteOneTodo">
+                    <image src="./../../images/trash.svg" lazy-load="false"></image>
+                </view>
+            </view>
+        </movable-view>
+    </movable-area>
+</view>
+<view class="foot"></view>
+<!-- 新建提醒事项弹框 -->
+<view>
+    <van-popup round show="{{ isPopUpShow }}" bind:close="onPopClose" position="bottom">
+        <van-panel custom-class="v-custom-class">
+            <van-cell-group>
+                <van-field label="名称" input-align="right" placeholder="请输入" value="{{ newTodo.title }}" bind:change="onTitleChange" />
+                <van-cell title="地址" title-width="30px" value="{{newTodo.address.address}}" bind:click="chooseAddress" is-link arrow-direction="down" />
+                <van-cell title="到期时间" value="{{utils.dateFormat(newTodo.date,'yyyy.MM.dd hh:mm')}}" bind:click="showTimePopup" is-link arrow-direction="down" />
+                <van-field label="备注" type="textarea" autosize input-align="right" value="{{ newTodo.remark }}" bind:change="onRemarkChange" />
+            </van-cell-group>
+        </van-panel>
+        <van-button color="#38495c" size="large" bind:tap="submitNewTodo">提交</van-button>
+        <van-button size="large" bind:tap="onPopClose">取消</van-button>
+    </van-popup>
+    <van-popup show="{{isTimePopUpShow}}" bind:close="onDatePopClose" position="bottom">
+        <van-datetime-picker type="datetime" value="{{ newTodo.date }}" bind:confirm="confirmDate" bind:cancel="onDatePopClose" />
+    </van-popup>
+</view>
+<!-- 筛选状态弹框 -->
+<view>
+    <van-popup show="{{ isDoneShow }}" bind:close="onIsDoneClose" position="bottom">
+        <picker-view indicator-style="height: 50px;" style="width: 100%; height: 150px;" bindchange="isDoneChange">
+            <picker-view-column>
+                <view wx:for="{{isDoneFilterList}}" wx:key="{{index}}" class="picker-column">
+                    {{item}}
+                </view>
+            </picker-view-column>
+        </picker-view>
+    </van-popup>
+</view>
